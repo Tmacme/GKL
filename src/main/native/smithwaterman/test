@@ -1,0 +1,20 @@
+#0  0x00007ffff779f23b in raise () from /lib64/libpthread.so.0
+#1  0x00000000005e9fc6 in isaac::io::InflateGzipDecompressor<std::vector<char, std::allocator<char> > >::zalloc (opaque=0x7ffffffcbd48, items=32784, size=4)
+    at /home/sugar/Isaac3/src/c++/include/io/InflateGzipDecompressor.hh:297
+#2  0x00007ffff7bbff8a in inflateInit2_ () from ./libz.so.1
+#3  0x0000000000729543 in initStreamState (this=0x7ffffffcbd48)
+    at /home/sugar/Isaac3/src/c++/include/io/InflateGzipDecompressor.hh:261
+#4  clearStreamState (this=0x7ffffffcbd48)
+    at /home/sugar/Isaac3/src/c++/include/io/InflateGzipDecompressor.hh:238
+#5  reset (this=0x7ffffffcbd48)
+    at /home/sugar/Isaac3/src/c++/include/io/InflateGzipDecompressor.hh:131
+#6  isaac::io::FastqReader::open (this=this@entry=0x7ffffffcbc40,
+    fastqPath=..., q0Base=q0Base@entry=33 '!')
+    at /home/sugar/Isaac3/src/c++/lib/io/FastqReader.cpp:81
+#7  0x00000000006c8cd1 in isaac::options::alignOptions::FastqFlowcell::parseFastqFlowcellInfo (laneFilePaths=..., fastqQ0=fastqQ0@entry=33 '!',
+    readNameLength=readNameLength@entry=0)
+    at /home/sugar/Isaac3/src/c++/lib/options/alignOptions/FastqFlowcell.cpp:158
+#8  0x00000000006c9306 in isaac::options::alignOptions::FastqFlowcell::parseFastqFlowcellInfo (flowcellFilePaths=std::vector of length 1, capacity 1 = {...},
+    allowVariableFastqLength=allowVariableFastqLength@entry=true,
+    fastqQ0=fastqQ0@entry=33 '!', readNameLength=readNameLength@entry=0)
+---Type <return> to continue, or q <return> to quit---quit
