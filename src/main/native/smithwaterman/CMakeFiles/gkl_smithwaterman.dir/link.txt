@@ -1,1 +1,0 @@
-/opt/gcc-4.8.2/bin/c++  -fPIC    -shared -Wl,-soname,libgkl_smithwaterman.so -o libgkl_smithwaterman.so CMakeFiles/gkl_smithwaterman.dir/IntelSmithWaterman.o 
