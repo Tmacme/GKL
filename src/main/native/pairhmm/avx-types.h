@@ -1,6 +1,7 @@
 #ifndef AVX_TEMPLATE_H
 #define AVX_TEMPLATE_H
 
+
 #define ALIGNED __attribute__((aligned(32)))
 
 typedef union __attribute__((aligned(32))) {
@@ -9,6 +10,14 @@ typedef union __attribute__((aligned(32))) {
         ALIGNED float  ALIGNED f[8];
         ALIGNED __m256i ALIGNED i;
 } ALIGNED mix_F ALIGNED;
+
+typedef union __attribute__((aligned(32))) {
+        ALIGNED __m512 ALIGNED d;
+        ALIGNED __m256i ALIGNED s[2];
+        ALIGNED float  ALIGNED f[16];
+        ALIGNED __m512i ALIGNED i;
+} ALIGNED mix_F256 ALIGNED;
+
 
 typedef union __attribute__((aligned(32))) {
         ALIGNED __m128 ALIGNED d;
@@ -29,11 +38,27 @@ typedef union ALIGNED {
   uint32_t masks[2] ;
 } MaskVec_F128 ;
 
+
+typedef union ALIGNED {
+  __m256i vec;
+  __m256 vecf;
+  uint32_t masks[8];
+} MaskVec_F256;  
+
+
 typedef union ALIGNED
 {
         ALIGNED __m128i ALIGNED i;
         ALIGNED __m128 ALIGNED f;
 } ALIGNED IF_128f ALIGNED;
+
+
+typedef union ALIGNED
+{
+        ALIGNED __m256i ALIGNED i;
+        ALIGNED __m256 ALIGNED f;
+} ALIGNED IF_256f ALIGNED;
+
 
 typedef union ALIGNED
 {

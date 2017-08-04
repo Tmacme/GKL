@@ -41,6 +41,7 @@ public class IntelPairHmm implements PairHMMNativeBinding {
      */
     @Override
     public synchronized boolean load(File tempDir) {
+
         boolean isLoaded = gklUtils.load(null);
 
         if(!isLoaded)
