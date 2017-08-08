@@ -66,13 +66,24 @@ void CONCAT(CONCAT(update_masks_for_cols_,SIMD_ENGINE), PRECISION)(int maskIndex
 
 }
 
+#ifdef avx512
+
 #define VEC_BLENDV(__distmChosen,__distm, __1_distm, __mask){_256_TYPE lowo, higho, lows, highs, lowm, highm, lowd, highd ;lows = _mm512_extractf32x8_ps(__distm, 0) ;lowm = _mm512_extractf32x8_ps(__mask, 0) ;lowd = _mm512_extractf32x8_ps(__1_distm, 0) ;highs = _mm512_extractf32x8_ps(__distm, 1) ;highm = _mm512_extractf32x8_ps(__mask, 1) ;highd = _mm512_extractf32x8_ps(__1_distm, 1) ;lowo = _mm256_blendv_ps(lows, lowd, lowm) ;higho = _mm256_blendv_ps(highs, highd, highm) ;__distmChosen =_mm512_insertf32x8(__distmChosen, lowo, 0) ;__distmChosen = _mm512_insertf32x8(__distmChosen, higho, 1) ;}
 
+#endif 
 
 void CONCAT(CONCAT(computeDistVec,SIMD_ENGINE), PRECISION) (BITMASK_VEC& bitMaskVec, SIMD_TYPE& distm, SIMD_TYPE& _1_distm, SIMD_TYPE& distmChosen) {
 
+
+#ifdef avx512
+
     VEC_BLENDV(distmChosen, distm, _1_distm, bitMaskVec.getCombinedMask());
 
+#else 
+
+    distmChosen = VEC_BLENDV(distm, _1_distm, bitMaskVec.getCombinedMask());
+
+#endif
     bitMaskVec.shift_left_1bit() ;
 }
 
