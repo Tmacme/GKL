@@ -6,7 +6,7 @@
 
 #define SIMD_ENGINE avx
 
-#define avx512
+//#define avx512
 
 #ifdef avx512
 

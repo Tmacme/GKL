@@ -11,7 +11,7 @@ typedef union __attribute__((aligned(32))) {
         ALIGNED __m256i ALIGNED i;
 } ALIGNED mix_F ALIGNED;
 
-typedef union __attribute__((aligned(32))) {
+typedef union __attribute__((aligned(64))) {
         ALIGNED __m512 ALIGNED d;
         ALIGNED __m256i ALIGNED s[2];
         ALIGNED float  ALIGNED f[16];

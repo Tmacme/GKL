@@ -51,9 +51,9 @@
 #define MAIN_TYPE float
 #define MAIN_TYPE_SIZE 32
 #define UNION_TYPE mix_F256
-#define IF_256 IF_256f
+#define IF_128 IF_128f
 #define IF_MAIN_TYPE IF_32
-#define SHIFT_CONST1 12
+#define SHIFT_CONST1 12 
 #define SHIFT_CONST2 3
 #define SHIFT_CONST3 4
 #define _128_TYPE __m128
@@ -89,25 +89,25 @@
     _mm512_mask_blend_ps(__mask, __v1, __v2)
 
 #define VEC_CAST_256_128(__v1)                  \
-    _mm512_castps512_ps256 (__v1)
+    _mm512_castps512_ps128 (__v1)
 
 #define VEC_EXTRACT_128(__v1, __im)             \
-    _mm512_extractf32x8_ps (__v1, __im)
+    _mm512_extractf32x4_ps (__v1, __im)
 
 #define VEC_EXTRACT_UNIT(__v1, __im)            \
-    _mm256_extract_epi32(__v1, __im)
+    _mm_extract_epi32(__v1, __im)
 
 #define VEC_SET1_VAL128(__val)                  \
-    _mm256_set1_ps(__val)
+    _mm_set1_ps(__val)
 
-#define VEC_MOVE(__v1, __mask, __val)                   \
-    _mm256_mask_mov_ps(__v1,__mask, __val)
+#define VEC_MOVE(__v1, __val)                   \
+    _mm_move_ss(__v1, __val)
 
 #define VEC_CAST_128_256(__v1)                  \
-    _mm512_castps256_ps512(__v1)
+    _mm512_castps128_ps512(__v1)
 
 #define VEC_INSERT_VAL(__v1, __val, __pos)      \
-     _mm512_insertf32x8(__v1, __val, __pos)
+     _mm512_insertf32x4(__v1, __val, __pos)
 
 #define VEC_CVT_128_256(__v1)                   \
     _mm512_cvtepi32_ps(__v1.i)
