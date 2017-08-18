@@ -135,7 +135,7 @@
 __vdst = _mm512_insertf32x8(__vdst, __vsHigh, 1) ;
 
 #define VEC_SHIFT_LEFT_1BIT(__vs)               \
-    __vs = _mm256_slli_epi16(__vs, 1)
+    __vs = _mm256_slli_epi32(__vs, 1)
 
 #define COMPARE_VECS(__v1, __v2, __first, __last) {                     \
     float* ptr1 = (float*) (&__v1) ;                                    \
