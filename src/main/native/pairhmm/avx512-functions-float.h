@@ -14,6 +14,7 @@
 #undef HAP_TYPE
 #undef MASK_TYPE
 #undef MASK_ALL_ONES
+#undef IF_256
 
 #undef SET_VEC_ZERO
 #undef VEC_OR
@@ -44,6 +45,9 @@
 #undef COMPARE_VECS
 #undef _256_INT_TYPE
 #undef BITMASK_VEC
+#undef VEC_EXTRACT_256
+#undef VEC_INSERT_VEC
+#undef VEC_SHIFT_LEFT
 #endif
 
 #define PRECISION s
@@ -52,9 +56,10 @@
 #define MAIN_TYPE_SIZE 32
 #define UNION_TYPE mix_F256
 #define IF_128 IF_128f
+#define IF_256 IF_256f
 #define IF_MAIN_TYPE IF_32
-#define SHIFT_CONST1 12 
-#define SHIFT_CONST2 3
+#define SHIFT_CONST1 3 
+#define SHIFT_CONST2 7
 #define SHIFT_CONST3 4
 #define _128_TYPE __m128
 #define _256_TYPE __m256
@@ -88,14 +93,17 @@
 #define VEC_BLEND(__v1, __v2, __mask)           \
     _mm512_mask_blend_ps(__mask, __v1, __v2)
 
+#define VEC_BLENDV(__v1, __v2, __mask)      \
+    _mm256_blendv_ps(__v1, __v2, __mask)
+
 #define VEC_CAST_256_128(__v1)                  \
     _mm512_castps512_ps128 (__v1)
 
-#define VEC_EXTRACT_128(__v1, __im)             \
-    _mm512_extractf32x4_ps (__v1, __im)
+#define VEC_EXTRACT_256(__v1, __im)             \
+    _mm512_extractf32x8_ps (__v1, __im)
 
 #define VEC_EXTRACT_UNIT(__v1, __im)            \
-    _mm_extract_epi32(__v1, __im)
+    _mm256_extract_epi32(__v1, __im)
 
 #define VEC_SET1_VAL128(__val)                  \
     _mm_set1_ps(__val)
@@ -107,7 +115,10 @@
     _mm512_castps128_ps512(__v1)
 
 #define VEC_INSERT_VAL(__v1, __val, __pos)      \
-     _mm512_insertf32x4(__v1, __val, __pos)
+     _mm256_insert_epi32(__v1, __val, __pos)
+
+#define VEC_INSERT_VEC(__v1, __v2, __pos)     \
+     _mm512_insertf32x8(__v1, __v2, __pos)
 
 #define VEC_CVT_128_256(__v1)                   \
     _mm512_cvtepi32_ps(__v1.i)
@@ -137,6 +148,10 @@ __vdst = _mm512_insertf32x8(__vdst, __vsHigh, 1) ;
 #define VEC_SHIFT_LEFT_1BIT(__vs)               \
     __vs = _mm256_slli_epi32(__vs, 1)
 
+#define VEC_SHIFT_LEFT(__vs, __val)        \
+    __vs = _mm256_slli_si256(__vs, __val)
+
+
 #define COMPARE_VECS(__v1, __v2, __first, __last) {                     \
     float* ptr1 = (float*) (&__v1) ;                                    \
     float* ptr2 = (float*) (&__v2) ;                                    \
@@ -162,10 +177,18 @@ class BitMaskVec_float {
     inline MASK_TYPE& getHighEntry(int index) {
         return high_.masks[index] ;
     }
-
+    
     inline const SIMD_TYPE& getCombinedMask() {
         VEC_SSE_TO_AVX(low_.vecf, high_.vecf, combined_) ;
         return combined_ ;
+    }
+
+    inline const _256_TYPE getLowVec() {
+	return low_.vecf;
+    } 
+
+     inline const _256_TYPE getHighVec() {
+        return high_.vecf;
     }
 
     inline void shift_left_1bit() {

@@ -26,6 +26,7 @@ typedef union __attribute__((aligned(32))) {
         ALIGNED __m128i ALIGNED i;
 } ALIGNED mix_F128 ALIGNED;
 
+
 typedef union ALIGNED {
   __m128i vec ;
   __m128 vecf ;
@@ -80,6 +81,14 @@ typedef union __attribute__((aligned(32))) {
         ALIGNED __m128i ALIGNED i;
 } ALIGNED mix_D128 ALIGNED;
 
+
+typedef union __attribute__((aligned(64))) {
+        ALIGNED __m512d ALIGNED d;
+        ALIGNED __m256 ALIGNED s[2];
+        ALIGNED double  ALIGNED f[8];
+        ALIGNED __m512i ALIGNED i;
+} ALIGNED mix_D256 ALIGNED;
+
 typedef union ALIGNED {
   __m128i vec ;
   __m128d vecf ;
@@ -92,11 +101,26 @@ typedef union ALIGNED {
   uint64_t masks[1] ;
 } MaskVec_D128 ;
 
+
+typedef union ALIGNED {
+  __m256i vec ;
+  __m256d vecf ;
+  uint64_t masks[4] ;
+} MaskVec_D256 ;
+
+
 typedef union ALIGNED
 {
         ALIGNED __m128i ALIGNED i;
         ALIGNED __m128d ALIGNED f;
 } ALIGNED IF_128d ALIGNED;
+
+typedef union ALIGNED
+{
+        ALIGNED __m256i ALIGNED i;
+        ALIGNED __m256d ALIGNED f;
+} ALIGNED IF_256d ALIGNED;
+
 
 typedef union ALIGNED
 {

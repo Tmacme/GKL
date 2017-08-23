@@ -6,7 +6,7 @@
 
 #define SIMD_ENGINE avx
 
-//#define avx512
+#define avx512
 
 #ifdef avx512
 
@@ -14,7 +14,13 @@
 #include "avx512-vector-shift.h"
 #include "avx-pairhmm-template.h"
 
-//template double compute_full_prob_avxd<double>(testcase* tc);
+
+#include "avx512-functions-double.h"
+#include "avx512-vector-shift.h"
+#include "avx-pairhmm-template.h"
+
+
+template double compute_full_prob_avxd<double>(testcase* tc);
 template float compute_full_prob_avxs<float>(testcase* tc);
 
 #else
@@ -23,7 +29,12 @@ template float compute_full_prob_avxs<float>(testcase* tc);
 #include "avx-vector-shift.h"
 #include "avx-pairhmm-template.h"
 
-//template double compute_full_prob_avxd<double>(testcase* tc);
+#include "avx-functions-double.h"
+#include "avx-vector-shift.h"
+#include "avx-pairhmm-template.h"
+
+
+template double compute_full_prob_avxd<double>(testcase* tc);
 template float compute_full_prob_avxs<float>(testcase* tc);
 #endif 
 

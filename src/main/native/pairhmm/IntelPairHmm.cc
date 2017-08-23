@@ -10,6 +10,8 @@
 #include "JavaData.h"
 #include "debug.h"
 
+#define debug
+
 bool g_use_double;
 int g_max_threads;
 bool g_use_fpga;
@@ -18,7 +20,7 @@ Context<float> g_ctxf;
 Context<double> g_ctxd;
 
 float (*g_compute_full_prob_float)(testcase *tc);
-//double (*g_compute_full_prob_double)(testcase *tc);
+double (*g_compute_full_prob_double)(testcase *tc);
 
 /*
  * Class:     com_intel_gkl_pairhmm_IntelPairHmm
@@ -65,7 +67,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_initNative
 
   // set function pointers
   g_compute_full_prob_float = compute_full_prob_avxs;
-  //g_compute_full_prob_double = compute_full_prob_avxd;
+  g_compute_full_prob_double = compute_full_prob_avxd;
 
   // init convert char table
   ConvertChar::init();
@@ -108,7 +110,7 @@ JNIEXPORT void JNICALL Java_com_intel_gkl_pairhmm_IntelPairHmm_computeLikelihood
       batch_valid ? batch.results[i] : g_compute_full_prob_float(&testcases[i]);
 
     if (result_float < MIN_ACCEPTED) {
-      double result_double = g_compute_full_prob_float(&testcases[i]);
+      double result_double = g_compute_full_prob_double(&testcases[i]);
       result_final = log10(result_double) - g_ctxd.LOG10_INITIAL_CONSTANT;
     }
     else {
