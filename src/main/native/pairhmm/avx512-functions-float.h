@@ -8,13 +8,17 @@
 #undef SHIFT_CONST1
 #undef SHIFT_CONST2
 #undef SHIFT_CONST3
+#undef SHIFT_CONST4
+#undef SHIFT_CONST5
 #undef _128_TYPE
 #undef SIMD_TYPE
 #undef AVX_LENGTH
 #undef HAP_TYPE
 #undef MASK_TYPE
 #undef MASK_ALL_ONES
+#undef _512_INT_TYPE
 #undef IF_256
+#undef MASK_CONST
 
 #undef SET_VEC_ZERO
 #undef VEC_OR
@@ -48,6 +52,11 @@
 #undef VEC_EXTRACT_256
 #undef VEC_INSERT_VEC
 #undef VEC_SHIFT_LEFT
+#undef VEC_XOR
+#undef VEC_BSHIFT_LEFT
+#undef VEC_BSHIFT_RIGHT
+#undef VEC_SET
+#undef VEC_PERMUTE
 #endif
 
 #define PRECISION s
@@ -61,22 +70,44 @@
 #define SHIFT_CONST1 3 
 #define SHIFT_CONST2 7
 #define SHIFT_CONST3 4
+#define SHIFT_CONST4 4
+#define SHIFT_CONST5 12
 #define _128_TYPE __m128
 #define _256_TYPE __m256
 #define SIMD_TYPE __m512
+#define _512_INT_TYPE __m512i
 #define _256_INT_TYPE __m256i
 #define AVX_LENGTH 16 
 #define HAP_TYPE UNION_TYPE
 #define MASK_TYPE uint32_t
 #define MASK_ALL_ONES 0xFFFFFFFF
 #define MASK_VEC MaskVec_F256
-#define MASK_CONST __mmask8
+#define MASK_CONST __mmask16
+
+//#define VEC_CVT(__v1) \
+    _mm512_cvtss_f32(__v1)
+
+#define VEC_PERMUTE(__v1, __v2) \
+    _mm512_permutexvar_epi32(__v1, __v2)
 
 #define SET_VEC_ZERO(__vec)                     \
     __vec= _mm512_setzero_ps()
 
+#define VEC_SET1() \
+    _mm512_set_epi32(14,13,12,11,10,9,8,7,6,5,4,3,2,1,0,15) 
+
+#define VEC_SET2() \
+    _mm512_set_epi32(0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF,0x0)
+
+#define VEC_SET3(__val) \
+    _mm512_set_epi32(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,__val)
+    
+
+#define VEC_AND(__v1, __v2) \
+     _mm512_and_epi32(__v1, __v2)
+
 #define VEC_OR(__v1, __v2)                      \
-    _mm512_or_ps(__v1, __v2)
+    _mm512_or_epi32(__v1, __v2)
 
 #define VEC_ADD(__v1, __v2)                     \
     _mm512_add_ps(__v1, __v2)
@@ -142,14 +173,24 @@
     _vector_shift_lastavxs(__v1, __val.f);
 
 #define VEC_SSE_TO_AVX(__vsLow, __vsHigh, __vdst)       \
-    __vdst = _mm512_castps256_ps512(__vsLow) ;            \
-__vdst = _mm512_insertf32x8(__vdst, __vsHigh, 1) ;
+    __vdst = _mm512_inserti32x8(__vdst,__vsLow,0) ;            \
+__vdst = _mm512_inserti32x8(__vdst, __vsHigh, 1) ;
 
 #define VEC_SHIFT_LEFT_1BIT(__vs)               \
     __vs = _mm256_slli_epi32(__vs, 1)
 
 #define VEC_SHIFT_LEFT(__vs, __val)        \
     __vs = _mm256_slli_si256(__vs, __val)
+
+#define VEC_XOR(__v1, __v2)    \
+     _mm512_xor_ps(__v1, __v2)
+
+#define VEC_BSHIFT_LEFT(__v1, __val)  \
+     _mm512_bslli_epi128(__v1, __val)
+
+
+#define VEC_BSHIFT_RIGHT(__v1, __val)   \
+     _mm512_bsrli_epi128(__v1, __val) 
 
 
 #define COMPARE_VECS(__v1, __v2, __first, __last) {                     \
@@ -167,7 +208,7 @@ __vdst = _mm512_insertf32x8(__vdst, __vsHigh, 1) ;
 class BitMaskVec_float {
 
     MASK_VEC low_, high_ ;
-    SIMD_TYPE combined_ ;
+    _512_INT_TYPE combined_ ;
 
     public:
 
@@ -178,8 +219,8 @@ class BitMaskVec_float {
         return high_.masks[index] ;
     }
     
-    inline const SIMD_TYPE& getCombinedMask() {
-        VEC_SSE_TO_AVX(low_.vecf, high_.vecf, combined_) ;
+    inline const _512_INT_TYPE& getCombinedMask() {
+        VEC_SSE_TO_AVX(low_.vec, high_.vec, combined_) ;
         return combined_ ;
     }
 
@@ -199,3 +240,5 @@ class BitMaskVec_float {
 } ;
 
 #define BITMASK_VEC BitMaskVec_float
+
+

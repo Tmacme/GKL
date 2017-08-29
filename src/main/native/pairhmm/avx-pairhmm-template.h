@@ -70,7 +70,14 @@ void CONCAT(CONCAT(update_masks_for_cols_,SIMD_ENGINE), PRECISION)(int maskIndex
 
 #ifdef avx512
 
-#define MACRO_BLENDV(__distmChosen,__distm, __1_distm, __lowm, __highm){_256_TYPE lowo, higho, lows, highs, lowd, highd,lowm, highm ;lows = VEC_EXTRACT_256(__distm, 0) ;lowd = VEC_EXTRACT_256(__1_distm, 0) ;highs = VEC_EXTRACT_256(__distm, 1) ;highd = VEC_EXTRACT_256(__1_distm, 1) ;lowo = VEC_BLENDV(lows, lowd, __lowm) ;higho = VEC_BLENDV(highs, highd,__highm) ;__distmChosen =VEC_INSERT_VEC(__distmChosen, lowo, 0) ;__distmChosen = VEC_INSERT_VEC(__distmChosen, higho, 1) ;}
+//#define MACRO_BLENDV(__distmChosen,__distm, __1_distm, __lowm, __highm){_256_TYPE lowo, higho, lows, highs, lowd, highd,lowm, highm ;lows = VEC_EXTRACT_256(__distm, 0) ;lowd = VEC_EXTRACT_256(__1_distm, 0) ;highs = VEC_EXTRACT_256(__distm, 1) ;highd = VEC_EXTRACT_256(__1_distm, 1) ;lowo = VEC_BLENDV(lows, lowd, __lowm) ;higho = VEC_BLENDV(highs, highd,__highm) ;__distmChosen =VEC_INSERT_VEC(__distmChosen, lowo, 0) ;__distmChosen = VEC_INSERT_VEC(__distmChosen, higho, 1) ;}
+
+#define MACRO_BLENDV(__distmChosen, __distm, __1_distm, __mask) \
+{ \
+   int testval = 0x80000000;\
+   _512_INT_TYPE val = _mm512_set1_epi32(testval);\
+   MASK_CONST mask = _mm512_test_epi32_mask(val, __mask); \
+   __distmChosen = VEC_BLEND(__distm,__1_distm,mask);}
 #endif 
 
 void CONCAT(CONCAT(computeDistVec,SIMD_ENGINE), PRECISION) (BITMASK_VEC& bitMaskVec, SIMD_TYPE& distm, SIMD_TYPE& _1_distm, SIMD_TYPE& distmChosen) {
@@ -78,7 +85,8 @@ void CONCAT(CONCAT(computeDistVec,SIMD_ENGINE), PRECISION) (BITMASK_VEC& bitMask
 
 #ifdef avx512
 
-    MACRO_BLENDV(distmChosen, distm, _1_distm, bitMaskVec.getLowVec(), bitMaskVec.getHighVec());
+    MACRO_BLENDV(distmChosen, distm, _1_distm, bitMaskVec.getCombinedMask());
+//      MACRO_BLENDV(distmChosen, distm, _1_distm, bitMaskVec.getLowVec(), bitMaskVec.getHighVec());
 //    for(int i=0;i<16;i++) DBG("%d %f",i, (float)distmChosen[i]);
 
 #else 
