@@ -61,6 +61,8 @@
 #undef VEC_SET2
 #undef VEC_SET3
 #undef VEC_PERMUTE
+#undef VEC_MASK_TEST
+#undef VEC_SET1_VAL_32
 #endif
 
 #define PRECISION d
@@ -192,6 +194,11 @@ __vdst = _mm512_inserti64x4(__vdst, __vsHigh, 1) ;
      _mm512_bsrli_epi128(__v1, __val) 
 
 
+#define VEC_SET1_VAL_32() \
+     _mm512_set1_epi64(0x8000000000000000)
+
+#define VEC_MASK_TEST(__val, __mask) \
+     _mm512_test_epi64_mask(__val, __mask);
 
 #define COMPARE_VECS(__v1, __v2, __first, __last) {                     \
     double* ptr1 = (double*) (&__v1) ;                                  \

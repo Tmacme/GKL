@@ -67,16 +67,14 @@ void CONCAT(CONCAT(update_masks_for_cols_,SIMD_ENGINE), PRECISION)(int maskIndex
     }
 
 }
+/* As vblendv instruction is not available in AVX512 we have to implement following */
 
 #ifdef avx512
 
-//#define MACRO_BLENDV(__distmChosen,__distm, __1_distm, __lowm, __highm){_256_TYPE lowo, higho, lows, highs, lowd, highd,lowm, highm ;lows = VEC_EXTRACT_256(__distm, 0) ;lowd = VEC_EXTRACT_256(__1_distm, 0) ;highs = VEC_EXTRACT_256(__distm, 1) ;highd = VEC_EXTRACT_256(__1_distm, 1) ;lowo = VEC_BLENDV(lows, lowd, __lowm) ;higho = VEC_BLENDV(highs, highd,__highm) ;__distmChosen =VEC_INSERT_VEC(__distmChosen, lowo, 0) ;__distmChosen = VEC_INSERT_VEC(__distmChosen, higho, 1) ;}
-
 #define MACRO_BLENDV(__distmChosen, __distm, __1_distm, __mask) \
 { \
-   int testval = 0x80000000;\
-   _512_INT_TYPE val = _mm512_set1_epi32(testval);\
-   MASK_CONST mask = _mm512_test_epi32_mask(val, __mask); \
+   _512_INT_TYPE val = VEC_SET1_VAL_32();\
+   MASK_CONST mask = VEC_MASK_TEST(val, __mask); \
    __distmChosen = VEC_BLEND(__distm,__1_distm,mask);}
 #endif 
 
@@ -86,14 +84,11 @@ void CONCAT(CONCAT(computeDistVec,SIMD_ENGINE), PRECISION) (BITMASK_VEC& bitMask
 #ifdef avx512
 
     MACRO_BLENDV(distmChosen, distm, _1_distm, bitMaskVec.getCombinedMask());
-//      MACRO_BLENDV(distmChosen, distm, _1_distm, bitMaskVec.getLowVec(), bitMaskVec.getHighVec());
-//    for(int i=0;i<16;i++) DBG("%d %f",i, (float)distmChosen[i]);
 
 #else 
 
     distmChosen = VEC_BLENDV(distm, _1_distm, bitMaskVec.getCombinedMask());
-  //  for(int i=0;i<8;i++) DBG("%d %f",i,(float)distmChosen[i]);
-
+  
 #endif
     bitMaskVec.shift_left_1bit() ;
 }
@@ -144,7 +139,6 @@ template<class NUMBER> void CONCAT(CONCAT(initializeVectors,SIMD_ENGINE), PRECIS
     }
 
     float* f = (float*) p_MM;
-    //DBG("%f",f[0]); 
     NUMBER *ptr_distm1D = (NUMBER *)distm1D;
     for (int r = 1; r < ROWS; r++)
     {
@@ -173,7 +167,6 @@ template<class NUMBER> inline void CONCAT(CONCAT(stripeINITIALIZATION,SIMD_ENGIN
     pMY   = p_MY[i];
     pYY   = p_YY[i];
 
-    //DBG("%d %llu",i,p_MM[i]);
      
     NUMBER zero = ctx._(0.0);
     NUMBER init_Y = ctx.INITIAL_CONSTANT / (tc->haplen);
@@ -202,7 +195,6 @@ template<class NUMBER> inline void CONCAT(CONCAT(stripeINITIALIZATION,SIMD_ENGIN
         Y_t_1.d = VEC_SET1_VAL(zero);
     }
     M_t_1_y = M_t_1;
-    //for(int i=0;i<8;i++) DBG("%f",M_t_1.f[i]);
 }
 
 /*
@@ -217,13 +209,9 @@ inline void CONCAT(CONCAT(computeMXY,SIMD_ENGINE), PRECISION)(UNION_TYPE &M_t, U
     M_t.d = VEC_MUL(VEC_ADD(VEC_ADD(VEC_MUL(M_t_2.d, pMM), VEC_MUL(X_t_2.d, pGAPM)), VEC_MUL(Y_t_2.d, pGAPM)), distmSel);
     //M_t.d = VEC_MUL( VEC_ADD(VEC_MUL(M_t_2.d, pMM), VEC_MUL(VEC_ADD(X_t_2.d, Y_t_2.d), pGAPM)), distmSel);
 
- //   DBG("%f %f %f", pMM[0], pMM[1], pMM[2]);    
 
-   // DBG("%f %f %f", M_t_2.f[0], M_t_2.f[1], M_t_2.f[2]);
 
-    //DBG("%f %f %f", X_t_2.f[0], X_t_2.f[1], X_t_2.f[2]);
 
-    //DBG("%f %f %f", Y_t_2.f[0], Y_t_2.f[1], Y_t_2.f[2]);
 
     M_t_y = M_t;
     
@@ -286,11 +274,6 @@ template<class NUMBER> NUMBER CONCAT(CONCAT(compute_full_prob_,SIMD_ENGINE), PRE
     int remainingRows = (ROWS-1) % AVX_LENGTH;
     int stripe_cnt = ((ROWS-1) / AVX_LENGTH) + (remainingRows!=0);
     
-    DBG("rows %d COLS %d AVX_LENGTH %d", ROWS, COLS, AVX_LENGTH);
-    DBG("remainingRows %d", remainingRows);
-    DBG("stripe_cnt %d", stripe_cnt);
-
-    DBG("MAX Count %d\n", MAVX_COUNT);
     const int maskBitCnt = MAIN_TYPE_SIZE ;
     const int numMaskVecs = (COLS+ROWS+maskBitCnt-1)/maskBitCnt ; // ceil function
 
@@ -327,7 +310,6 @@ template<class NUMBER> NUMBER CONCAT(CONCAT(compute_full_prob_,SIMD_ENGINE), PRE
                 CONCAT(CONCAT(computeMXY,SIMD_ENGINE), PRECISION)(M_t, X_t, Y_t, M_t_y, M_t_2, X_t_2, Y_t_2, M_t_1, X_t_1, M_t_1_y, Y_t_1,
                         pMM, pGAPM, pMX, pXX, pMY, pYY, distmChosen);
 
-        //        DBG("%f %d",M_t.f[0], ShiftIdx); 
                 CONCAT(CONCAT(_vector_shift,SIMD_ENGINE), PRECISION)(M_t, shiftOutM[ShiftIdx], shiftOutM[begin_d+mbi]);
 
                 CONCAT(CONCAT(_vector_shift,SIMD_ENGINE), PRECISION)(X_t, shiftOutX[ShiftIdx], shiftOutX[begin_d+mbi]);
@@ -337,7 +319,6 @@ template<class NUMBER> NUMBER CONCAT(CONCAT(compute_full_prob_,SIMD_ENGINE), PRE
                 M_t_2 = M_t_1; M_t_1 = M_t; X_t_2 = X_t_1; X_t_1 = X_t;
                 Y_t_2 = Y_t_1; Y_t_1 = Y_t; M_t_1_y = M_t_y;
 
-        //        for(i=0;i<16;i++) DBG("%f", M_t.f[i]);
              }
         }
     }
@@ -387,9 +368,7 @@ template<class NUMBER> NUMBER CONCAT(CONCAT(compute_full_prob_,SIMD_ENGINE), PRE
         }
         UNION_TYPE sumMX;
         sumMX.d = VEC_ADD(sumM, sumX);
-        DBG("%d", remainingRows-1);
         result_avx2 = sumMX.f[remainingRows-1];
-        for(int i=0;i<8;i++) DBG("sumMX.f %e",sumMX.f[i]);
         DBG("result %e", result_avx2);
     }
     return result_avx2;

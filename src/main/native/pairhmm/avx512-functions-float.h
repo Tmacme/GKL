@@ -55,8 +55,12 @@
 #undef VEC_XOR
 #undef VEC_BSHIFT_LEFT
 #undef VEC_BSHIFT_RIGHT
-#undef VEC_SET
+#undef VEC_SET1_VAL_32
+#undef VEC_SET1
+#undef VEC_SET2
+#undef VEC_SET3
 #undef VEC_PERMUTE
+#undef VEC_MASK_TEST
 #endif
 
 #define PRECISION s
@@ -157,6 +161,9 @@
 #define VEC_SET1_VAL(__val)                     \
     _mm512_set1_ps(__val)
 
+#define VEC_SET1_VAL_32() \
+    _mm512_set1_epi32(0x80000000)
+
 #define VEC_POPCVT_CHAR(__ch)                   \
     _mm512_cvtepi32_ps(_mm512_set1_epi32(__ch))
 
@@ -191,6 +198,9 @@ __vdst = _mm512_inserti32x8(__vdst, __vsHigh, 1) ;
 
 #define VEC_BSHIFT_RIGHT(__v1, __val)   \
      _mm512_bsrli_epi128(__v1, __val) 
+
+#define VEC_MASK_TEST(__val, __mask) \
+     _mm512_test_epi32_mask(__val, __mask)
 
 
 #define COMPARE_VECS(__v1, __v2, __first, __last) {                     \
