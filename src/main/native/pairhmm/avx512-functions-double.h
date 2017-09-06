@@ -135,7 +135,7 @@
     _mm512_extractf64x4_pd (__v1, __im)
 
 #define VEC_EXTRACT_UNIT(__v1, __im)            \
-    _mm256_extract_epi32(__v1, __im)
+    _mm256_extract_epi64(__v1, __im)
 
 #define VEC_SET1_VAL128(__val)                  \
     _mm_set1_pd(__val)
